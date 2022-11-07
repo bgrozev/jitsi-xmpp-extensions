@@ -23,6 +23,7 @@ import org.jivesoftware.smack.xml.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * An abstract representation of a participant in a conference as described by Colibri signaling.
@@ -61,6 +62,15 @@ public abstract class AbstractConferenceEntity
      */
     public static final boolean EXPIRE_DEFAULT = false;
 
+    /**
+     * Check if a list of {@link Transport} contains elements with the same ID.
+     */
+    private static boolean hasDuplicateIds(@NotNull List<Transport> transports)
+    {
+        Set<String> ids = transports.stream().map(Transport::getId).collect(Collectors.toSet());
+        return ids.size() < transports.size();
+    }
+
     protected AbstractConferenceEntity(String element)
     {
         super(NAMESPACE, element);
@@ -94,9 +104,13 @@ public abstract class AbstractConferenceEntity
             addChildExtension(m);
         }
 
-        if (b.transport != null)
+        if (hasDuplicateIds(b.transports))
         {
-            addChildExtension(b.transport);
+            throw new IllegalArgumentException("More than one Transport with the same ID.");
+        }
+        for (Transport transport : b.transports)
+        {
+            addChildExtension(transport);
         }
 
         if (b.sources != null)
@@ -125,9 +139,9 @@ public abstract class AbstractConferenceEntity
     /**
      * Get the transport associated with this conference entity.
      */
-    public @Nullable Transport getTransport()
+    public @NotNull List<Transport> getTransports()
     {
-        return getFirstChildOfType(Transport.class);
+        return getChildExtensionsOfType(Transport.class);
     }
 
     /**
@@ -162,7 +176,7 @@ public abstract class AbstractConferenceEntity
     public abstract static class Builder
     {
         /** The transport. */
-        private Transport transport;
+        private final List<Transport> transports = new ArrayList<>();
 
         /**
          * The id of the endpoint being built.
@@ -202,11 +216,16 @@ public abstract class AbstractConferenceEntity
             return this;
         }
 
+        public Builder addTransport(Transport t)
+        {
+            transports.add(t);
+            return this;
+        }
+
         public Builder setTransport(Transport t)
         {
-            transport = t;
-
-            return this;
+            transports.clear();
+            return addTransport(t);
         }
 
         public Builder setSources(Sources s)
@@ -255,6 +274,11 @@ public abstract class AbstractConferenceEntity
             if (id == null)
             {
                 throw new SmackParsingException.RequiredAttributeMissingException(ID_ATTR_NAME);
+            }
+
+            if (hasDuplicateIds(abstractConferenceEntity.getTransports()))
+            {
+                throw new SmackParsingException("More than one Transport child with the same ID.");
             }
 
             return abstractConferenceEntity;

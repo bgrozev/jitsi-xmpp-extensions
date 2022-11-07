@@ -56,6 +56,7 @@ public class Colibri2IQTest
             + "<transport ice-controlling='true'>"
             + "<sctp/>"
             + "</transport>"
+            + "<transport id='second-transport' use-unique-port='true'/>"
             + "<sources>"
             + "<media-source type='video' id='bd9b6765-v1'>"
             + "<source xmlns='urn:xmpp:jingle:apps:rtp:ssma:0' ssrc='803354056'/>"
@@ -117,6 +118,13 @@ public class Colibri2IQTest
         transportBuilder.setIceControlling(true);
         transportBuilder.setUseUniquePort(false);
         transportBuilder.setSctp(new Sctp.Builder().build());
+        endpointBuilder.addTransport(transportBuilder.build());
+
+        Transport.Builder transportBuilder2 = Transport.getBuilder();
+        transportBuilder2.setId("second-transport");
+        transportBuilder2.setIceControlling(false);
+        transportBuilder2.setUseUniquePort(true);
+        endpointBuilder.addTransport(transportBuilder2.build());
 
         Sources.Builder sourcesBuilder = Sources.getBuilder();
         SourcePacketExtension ssrc = new SourcePacketExtension();
@@ -127,7 +135,6 @@ public class Colibri2IQTest
             addSource(ssrc).build());
 
         endpointBuilder.addMedia(mediaBuilder.build());
-        endpointBuilder.setTransport(transportBuilder.build());
         endpointBuilder.setSources(sourcesBuilder.build());
         endpointBuilder.setForceMute(true, true);
         endpointBuilder.addCapability("cap1");
@@ -154,13 +161,20 @@ public class Colibri2IQTest
         assertEquals(MediaType.VIDEO, endpoint.getSources().getMediaSources().get(0).getType(), "Source type");
         assertEquals(SSRC, endpoint.getSources().getMediaSources().get(0).getSources().get(0).getSSRC(), "SSRC");
 
-        assertNotNull(endpoint.getTransport());
-        assertNotNull(endpoint.getTransport().getSctp());
+        List<Transport> transports = endpoint.getTransports();
+        assertEquals(2, transports.size());
+        assertNotNull(transports.get(0));
+        assertNotNull(transports.get(0).getSctp());
+        assertNotNull(transports.get(1));
+        assertNull(transports.get(1).getSctp());
+        assertFalse(transports.get(1).getIceControlling());
+        assertTrue(transports.get(1).getUseUniquePort());
 
         assertNotNull(endpoint.getForceMute(), "force-mute must be present");
         assertTrue(endpoint.getForceMute().getAudio(), "force-mute audio must be true");
         assertTrue(endpoint.getForceMute().getVideo(), "force-mute video must be true");
 
+        System.err.println(iq.toXML().toString());
         Diff diff = DiffBuilder.compare(expectedXml).
             withTest(iq.toXML().toString()).
             checkForIdentical().build();
@@ -212,8 +226,14 @@ public class Colibri2IQTest
         assertEquals(MediaType.VIDEO, endpoint.getSources().getMediaSources().get(0).getType(), "Source type");
         assertEquals(SSRC, endpoint.getSources().getMediaSources().get(0).getSources().get(0).getSSRC(), "SSRC");
 
-        assertNotNull(endpoint.getTransport());
-        assertNotNull(endpoint.getTransport().getSctp());
+        List<Transport> transports = endpoint.getTransports();
+        assertEquals(2, transports.size());
+        assertNotNull(transports.get(0));
+        assertNotNull(transports.get(0).getSctp());
+        assertNotNull(transports.get(1));
+        assertNull(transports.get(1).getSctp());
+        assertFalse(transports.get(1).getIceControlling());
+        assertTrue(transports.get(1).getUseUniquePort());
 
         assertNotNull(endpoint.getForceMute(), "force-mute must not be null");
         assertTrue(endpoint.getForceMute().getAudio(), "force-mute audio must be true");

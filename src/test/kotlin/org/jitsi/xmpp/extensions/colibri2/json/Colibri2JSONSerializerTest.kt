@@ -128,7 +128,7 @@ private val expectedMappings = listOf(
       "id": "bd9b6765",
       "stats-id": "Jayme-Clv",
       "medias": [{"type":"audio", "payload-types": [{"name":"opus", "clockrate":"48000", "channels": "2"}]}],
-      "transport": {"ice-controlling":true},
+      "transports": [{"ice-controlling":true}],
       "sources": [{"type":"video", "id":"bd9b6765-v1", "sources":[803354056]}],
       "force-mute": {"audio":true, "video":true}
     }
@@ -269,7 +269,7 @@ private val expectedMappings = listOf(
           ]
         }
       ],
-      "transport": { "ice-controlling": true },
+      "transports": [{ "ice-controlling": true }],
       "capabilities": [ "source-names" ]
     }
   ]
@@ -313,7 +313,7 @@ private val expectedMappings = listOf(
   "endpoints": [
     {
       "id":"79f0273e",
-      "transport": {
+      "transports": [{
         "transport": {
           "candidates": [
             {
@@ -346,7 +346,7 @@ private val expectedMappings = listOf(
             }
           ]
         }
-      }
+      }]
     }
   ],
   "sources": [
@@ -422,7 +422,7 @@ private val expectedMappings = listOf(
     {
       "id":"79f0273e",
       "stats-id":"Garett-w1o",
-      "transport": {
+      "transports": [{
         "transport": {
           "xmlns": "urn:xmpp:jingle:transports:ice-udp:1",
           "ufrag":"sXoJ",
@@ -436,7 +436,7 @@ private val expectedMappings = listOf(
           ],
           "rtcp-mux": true
         }
-      },
+      }],
       "sources": [
         {
           "type": "audio",
@@ -551,6 +551,34 @@ private val expectedMappings = listOf(
 {
   "meeting-id":"cbccc2bd-c3c7-4880-acb8-cdb7accc4073",
    "expire": true
+}
+        """,
+        clazz = ConferenceModifyIQ::class
+    ),
+    Mapping(
+        name = "Multiple transports",
+        xml = """
+<iq xmlns='jabber:client' id='id' type='get'>
+  <conference-modify xmlns='jitsi:colibri2' meeting-id='88ff288c-5eeb-4ea9-bc2f-93ea38c43b78' name='myconference@jitsi.example' create='true'>
+    <endpoint xmlns='jitsi:colibri2' id='bd9b6765' stats-id='Jayme-Clv'>
+      <transport ice-controlling='true'/>
+      <transport id='second-transport'/>
+    </endpoint>
+  </conference-modify>
+</iq>
+        """,
+        json = """
+{
+  "meeting-id":"88ff288c-5eeb-4ea9-bc2f-93ea38c43b78",
+  "name":"myconference@jitsi.example",
+  "create":true,
+  "endpoints":[
+    {
+      "id": "bd9b6765",
+      "stats-id": "Jayme-Clv",
+      "transports": [{"ice-controlling":true}, {"id":"second-transport"}]
+    }
+  ]
 }
         """,
         clazz = ConferenceModifyIQ::class

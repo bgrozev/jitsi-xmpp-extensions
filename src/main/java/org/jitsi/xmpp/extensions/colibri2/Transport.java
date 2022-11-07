@@ -60,6 +60,16 @@ public class Transport
     public static final boolean USE_UNIQUE_PORT_DEFAULT = false;
 
     /**
+     * The name of the {@code id} attribute.
+     */
+    public static final String ID_ATTR_NAME = "id";
+
+    /**
+     * The default value for the {@code id} attribute.
+     */
+    public static final String ID_DEFAULT = "default";
+
+    /**
      * Construct a Transport.  Needs to be public for DefaultPacketExtensionProvider to work.
      */
     public Transport()
@@ -77,6 +87,11 @@ public class Transport
         if (b.iceControlling != ICE_CONTROLLING_DEFAULT)
         {
             setAttribute(ICE_CONTROLLING_ATTR_NAME, b.iceControlling);
+        }
+
+        if (!ID_DEFAULT.equals(b.id))
+        {
+            setAttribute(ID_ATTR_NAME, b.id);
         }
 
         if (b.useUniquePort != USE_UNIQUE_PORT_DEFAULT)
@@ -114,6 +129,12 @@ public class Transport
     {
         String iceControlling = getAttributeAsString(ICE_CONTROLLING_ATTR_NAME);
         return iceControlling == null ? ICE_CONTROLLING_DEFAULT : Boolean.parseBoolean(iceControlling);
+    }
+
+    public @NotNull String getId()
+    {
+        String id = getAttributeAsString(ID_ATTR_NAME);
+        return id != null ? id : ID_DEFAULT;
     }
 
     /**
@@ -158,6 +179,9 @@ public class Transport
 
         private boolean iceControlling = ICE_CONTROLLING_DEFAULT;
 
+        @NotNull
+        private String id = ID_DEFAULT;
+
         private IceUdpTransportPacketExtension iceUdpExtension;
 
         private Sctp sctp;
@@ -177,6 +201,12 @@ public class Transport
         public Builder setIceControlling(boolean i)
         {
             this.iceControlling = i;
+            return this;
+        }
+
+        public Builder setId(@NotNull String id)
+        {
+            this.id = id;
             return this;
         }
 

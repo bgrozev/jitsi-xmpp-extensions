@@ -74,6 +74,10 @@ object Colibri2JSONDeserializer {
                 if (it is Boolean) { setIceControlling(it) }
             }
 
+            transport[Transport.ID_ATTR_NAME]?.let {
+                setId(it.toString())
+            }
+
             transport[Transport.USE_UNIQUE_PORT_ATTR_NAME]?.let {
                 if (it is Boolean) { setUseUniquePort(it) }
             }
@@ -152,8 +156,14 @@ object Colibri2JSONDeserializer {
             }
         }
 
-        entity[Transport.ELEMENT]?.let {
-            if (it is JSONObject) { builder.setTransport(deserializeTransport(it)) }
+        entity["${Transport.ELEMENT}s"]?.let { transports ->
+            if (transports is JSONArray) {
+                transports.forEach {
+                    if (it is JSONObject) {
+                        builder.addTransport(deserializeTransport(it))
+                    }
+                }
+            }
         }
 
         entity[Sources.ELEMENT]?.let {

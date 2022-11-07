@@ -20,6 +20,7 @@ import java.net.*;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.*;
 import org.jivesoftware.smack.packet.*;
 import org.jivesoftware.smack.util.*;
 
@@ -524,6 +525,7 @@ public abstract class AbstractPacketExtension
      * @return a (possibly empty) list containing all of this packet's direct
      * child extensions that match the specified <tt>type</tt>
      */
+    @NotNull
     public <T extends ExtensionElement> List<T> getChildExtensionsOfType(
             Class<T> type)
     {

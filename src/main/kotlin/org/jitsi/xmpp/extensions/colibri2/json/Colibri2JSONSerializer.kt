@@ -106,6 +106,12 @@ object Colibri2JSONSerializer {
         }
     }
 
+    private fun serializeTransports(transports: List<Transport>): JSONArray = JSONArray().apply {
+        transports.forEach {
+            add(serializeTransport(it))
+        }
+    }
+
     private fun serializeTransport(transport: Transport): JSONObject {
         return JSONObject().apply {
             if (transport.iceControlling != Transport.ICE_CONTROLLING_DEFAULT) {
@@ -119,6 +125,9 @@ object Colibri2JSONSerializer {
             }
             transport.sctp?.let {
                 put(Sctp.ELEMENT, serializeSctp(it))
+            }
+            if (transport.id != Transport.ID_DEFAULT) {
+                put(Transport.ID_ATTR_NAME, transport.id)
             }
         }
     }
@@ -164,7 +173,9 @@ object Colibri2JSONSerializer {
                 put(MEDIA_LIST, serializeMedias(entity.media))
             }
 
-            entity.transport?.let { put(Transport.ELEMENT, serializeTransport(it)) }
+            if (entity.transports.isNotEmpty()) {
+                put("${Transport.ELEMENT}s", serializeTransports(entity.transports))
+            }
 
             entity.sources?.let { put(Sources.ELEMENT, serializeSources(it)) }
         }
