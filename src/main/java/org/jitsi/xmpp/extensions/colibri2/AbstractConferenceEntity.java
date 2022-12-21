@@ -145,6 +145,20 @@ public abstract class AbstractConferenceEntity
     }
 
     /**
+     * @deprecated use {@link #getTransports()} instead.
+     * @return the transport with the default ID, or the first transport (though the order is not defined).
+     */
+    @Deprecated
+    public @Nullable Transport getTransport()
+    {
+        List<Transport> transports = getTransports();
+        return transports.stream()
+                .filter(t -> Transport.ID_DEFAULT.equals(t.getId()))
+                .findFirst()
+                .orElseGet(() -> transports.stream().findFirst().orElse(null));
+    }
+
+    /**
      * Get the sources associated with this conference entity.
      */
     public @Nullable Sources getSources()
